@@ -32,6 +32,12 @@ module.exports = function(container, pointsMap, options){
 	var FPSMonitor = document.querySelector('#FPS');
 	var dTMonitor = document.querySelector('#dT');
 	var warningMonitor = document.querySelector('#warning');
+
+	// HUD and Minimap elements
+	const minimapCanvas = document.getElementById('minimapCanvas');
+	const minimapCtx = minimapCanvas.getContext('2d');
+	const hudFPSSpan = document.getElementById('hudFPS');
+	const hudAntsSpan = document.getElementById('hudAnts');
 	var refreshTime = 0;
 	var maxDeltaTime = 40;
 	var FPSOverLimitCount = 0;
@@ -82,9 +88,78 @@ module.exports = function(container, pointsMap, options){
 	function displayFPS(dT){
 		FPSCount = (1000/dT).toFixed(2);
 		var t = dT.toFixed(2);
-		FPSMonitor.textContent = 'FPS : ' + FPSCount;  
-		dTMonitor.textContent = 'nbAnts : ' + population.length;
+		FPSMonitor.textContent = 'FPS : ' + FPSCount;  // Original monitor
+		dTMonitor.textContent = 'nbAnts : ' + population.length; // Original monitor
+
+		// Update HUD
+		if (hudFPSSpan) hudFPSSpan.textContent = FPSCount;
+		if (hudAntsSpan) hudAntsSpan.textContent = population.length;
+		
 		// dTMonitor.innerText = 'dT : ' + t + 'ms';
+	}
+
+	function drawMinimap() {
+		if (!minimapCtx || !pointsInfos) return; // Ensure context and pointsInfos are available
+
+		const minimapWidth = minimapCanvas.width;
+		const minimapHeight = minimapCanvas.height;
+
+		// Clear Minimap
+		minimapCtx.clearRect(0, 0, minimapWidth, minimapHeight);
+
+		// Background
+		minimapCtx.fillStyle = 'rgba(230, 230, 230, 0.85)'; // Slightly less transparent than CSS for clarity
+		minimapCtx.fillRect(0, 0, minimapWidth, minimapHeight);
+
+		// Draw Points/Cities
+		pointsInfos.points.forEach(p => {
+			const x = p.x * minimapWidth;
+			const y = p.y * minimapHeight;
+			if (pointsInfos.citySet.indexOf(p.id) !== -1) {
+				minimapCtx.fillStyle = 'blue';
+				minimapCtx.beginPath();
+				minimapCtx.arc(x, y, 3, 0, 2 * Math.PI);
+				minimapCtx.fill();
+			} else {
+				minimapCtx.fillStyle = 'black';
+				minimapCtx.beginPath();
+				minimapCtx.arc(x, y, 1, 0, 2 * Math.PI);
+				minimapCtx.fill();
+			}
+		});
+
+		// Draw Ants
+		minimapCtx.fillStyle = 'red';
+		population.forEach(ant => {
+			const x = ant.x * minimapWidth;
+			const y = ant.y * minimapHeight;
+			minimapCtx.fillRect(x - 1, y - 1, 2, 2); // Draw ants as small squares
+		});
+
+		// Draw Mouse Obstacle
+		if (options && typeof options.repSize !== 'undefined' && canvas.width > 0 && canvas.height > 0) {
+			const normMouseX = lastMouseMoveEvent.clientX / canvas.width;
+			const normMouseY = lastMouseMoveEvent.clientY / canvas.height;
+			
+			if (normMouseX >= 0 && normMouseX <= 1 && normMouseY >=0 && normMouseY <=1) { // Only draw if mouse is over main canvas
+				const mouseMapX = normMouseX * minimapWidth;
+				const mouseMapY = normMouseY * minimapHeight;
+				// Scale repSize: options.repSize is in [0,1] relative to main canvas, convert to minimap pixels
+				// The problem states options.repSize is an absolute value (e.g. 10), not normalized.
+				// Ant.js uses it as `this.repSize`. If it's small (e.g., 0.05 in main canvas), scale it.
+				// If it's large (e.g. 10 pixels on a say 800px canvas -> 10/800 = 0.0125), it needs context.
+				// The ant.js uses options.repSize directly (e.g. 0.05)
+				// Let's assume options.repSize is a value that's meaningful in the [0,1] world space.
+				const repulsionRadiusMinimap = options.repSize * minimapWidth; // Assuming repSize is a normalized factor
+												// If options.repSize was intended as pixels on main canvas, this would be:
+												// (options.repSize / canvas.width) * minimapWidth;
+
+				minimapCtx.fillStyle = 'rgba(0, 255, 0, 0.4)'; // semi-transparent green
+				minimapCtx.beginPath();
+				minimapCtx.arc(mouseMapX, mouseMapY, repulsionRadiusMinimap, 0, 2 * Math.PI);
+				minimapCtx.fill();
+			}
+		}
 	}
 
 	function tick() {
@@ -185,7 +260,10 @@ module.exports = function(container, pointsMap, options){
 			context.fillRect(x, y, ANTSIZE, ANTSIZE);
 			context.closePath();
 			context.fill();
-		})
+		});
+
+		// Draw minimap
+		drawMinimap();
 	};
 	
 	var lastMouseMoveEvent = {

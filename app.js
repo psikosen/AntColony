@@ -2850,7 +2850,114 @@ module.exports = function(container, pointsMap, options){
 },{"./ant.js":"/Users/Romain/Documents/Programmation/ants/AntColony/src/ant.js","./antsGroup":"/Users/Romain/Documents/Programmation/ants/AntColony/src/antsGroup.js"}],"/Users/Romain/Documents/Programmation/ants/AntColony/src/runAnimation.js":[function(require,module,exports){
 'use strict';
 
-require('../index.js')(document.body.querySelector('.colony'));
+const simulation = require('../index.js')(document.body.querySelector('.colony'));
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Get DOM Elements
+  const nbAntsInput = document.getElementById('nbAnts');
+  const velocityInput = document.getElementById('velocity');
+  const intelligenceInput = document.getElementById('intelligence');
+  const repulsionSizeInput = document.getElementById('repulsionSize');
+  const repulsionSpeedInput = document.getElementById('repulsionSpeed');
+
+  const nbAntsValueSpan = document.getElementById('nbAntsValue');
+  const velocityValueSpan = document.getElementById('velocityValue');
+  const intelligenceValueSpan = document.getElementById('intelligenceValue');
+  const repulsionSizeValueSpan = document.getElementById('repulsionSizeValue');
+  const repulsionSpeedValueSpan = document.getElementById('repulsionSpeedValue');
+
+  const playPauseButton = document.getElementById('playPauseButton');
+  const resetButton = document.getElementById('resetButton');
+
+  // HUD Element References
+  const hudFPS Span = document.getElementById('hudFPS'); // Will be updated by rendering.js
+  const hudAntsSpan = document.getElementById('hudAnts');
+  const hudVelocitySpan = document.getElementById('hudVelocity');
+  const hudIntelligenceSpan = document.getElementById('hudIntelligence');
+  const hudRepulsionSizeSpan = document.getElementById('hudRepulsionSize');
+  const hudRepulsionSpeedSpan = document.getElementById('hudRepulsionSpeed');
+
+  // Default simulation options (matching index.html initial values)
+  const defaultOptions = {
+    nbAnts: parseInt(nbAntsInput.value),
+    velocity: parseFloat(velocityInput.value),
+    intelligence: parseFloat(intelligenceInput.value),
+    repSize: parseInt(repulsionSizeInput.value),
+    repSpeed: parseFloat(repulsionSpeedInput.value)
+  };
+
+  // Function to update all span values
+  function updateAllSpanValues() {
+    nbAntsValueSpan.textContent = nbAntsInput.value;
+    velocityValueSpan.textContent = parseFloat(velocityInput.value).toFixed(1);
+    intelligenceValueSpan.textContent = parseFloat(intelligenceInput.value).toFixed(1);
+    repulsionSizeValueSpan.textContent = repulsionSizeInput.value;
+    repulsionSpeedValueSpan.textContent = parseFloat(repulsionSpeedInput.value).toFixed(1);
+
+    // Update HUD Spans
+    // hudFPS Span is updated by rendering.js, so not set here other than initial placeholder in HTML
+    hudAntsSpan.textContent = nbAntsInput.value;
+    hudVelocitySpan.textContent = parseFloat(velocityInput.value).toFixed(1);
+    hudIntelligenceSpan.textContent = parseFloat(intelligenceInput.value).toFixed(1);
+    hudRepulsionSizeSpan.textContent = repulsionSizeInput.value;
+    hudRepulsionSpeedSpan.textContent = parseFloat(repulsionSpeedInput.value).toFixed(1);
+  }
+
+  // Function to get current options from inputs
+  function getCurrentOptions() {
+    return {
+      nbAnts: parseInt(nbAntsInput.value),
+      velocity: parseFloat(velocityInput.value),
+      intelligence: parseFloat(intelligenceInput.value),
+      repSize: parseInt(repulsionSizeInput.value), // Maps to repSize in simulation
+      repSpeed: parseFloat(repulsionSpeedInput.value) // Maps to repSpeed in simulation
+    };
+  }
+
+  // Initialize span values
+  updateAllSpanValues();
+
+  // Event Listeners for input controls
+  [nbAntsInput, velocityInput, intelligenceInput, repulsionSizeInput, repulsionSpeedInput].forEach(input => {
+    input.addEventListener('input', () => {
+      updateAllSpanValues();
+      const currentOpts = getCurrentOptions();
+      simulation.changeOptions(currentOpts);
+    });
+  });
+
+  // Event Listeners for buttons
+  let isPaused = false; // Assuming simulation starts playing
+
+  playPauseButton.addEventListener('click', () => {
+    simulation.togglePlayPause();
+    isPaused = !isPaused;
+    playPauseButton.textContent = isPaused ? 'Play' : 'Pause';
+  });
+
+  resetButton.addEventListener('click', () => {
+    const currentOpts = getCurrentOptions();
+    // The simulation's own reset logic might re-initialize ants based on its internal options.
+    // To ensure it uses the UI's current values, we first changeOptions, then reset,
+    // or ensure the simulation's reset can take options.
+    // Based on the provided init structure, the simulation.reset() itself does not take options,
+    // but the _init function (called by the exported reset) does.
+    // So, we might need to ensure the simulation's options are updated before reset is called internally
+    // or that the simulation's reset function is called with the current options.
+    // The current structure is: init -> _init ; simulation.reset -> render.reset, then _init(opts).
+    // This means simulation.reset(opts) is indeed the correct way.
+    simulation.reset(currentOpts); // Pass current UI options to reset.
+    isPaused = false; // Reset pause state
+    playPauseButton.textContent = 'Pause'; // Reset button text
+    // Values in inputs don't change on reset unless we manually reset them to defaults or saved state.
+    // The task asks to reset to *currently selected UI values*, which simulation.reset(currentOpts) should handle.
+    // Spans will reflect input values due to updateAllSpanValues() if inputs were changed before reset.
+    // If the simulation internally resets its options to some initial defaults, then we might need to
+    // re-apply UI values after reset, or update input values to reflect simulation's new state.
+    // For now, assume simulation.reset(currentOpts) correctly re-initializes with these options.
+    updateAllSpanValues(); // Ensure spans are in sync if reset changed anything unexpected by simulation.
+  });
+});
 },{"../index.js":"/Users/Romain/Documents/Programmation/ants/AntColony/index.js"}],"/Users/Romain/Documents/Programmation/ants/AntColony/src/svgPath.js":[function(require,module,exports){
 'use strict';
 

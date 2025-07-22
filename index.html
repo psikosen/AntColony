@@ -60,6 +60,34 @@
 				opacity: 1;
 			}
 
+			/* Styles moved from second style tag */
+			.controls {
+				position: fixed;
+				top: 10px;
+				left: 10px;
+				background-color: rgba(200, 200, 200, 0.8);
+				padding: 15px;
+				border-radius: 5px;
+				z-index: 1000; /* Ensure controls are above other elements */
+			}
+
+			.controls > div {
+				margin-bottom: 10px;
+			}
+
+			.controls label {
+				display: inline-block;
+				width: 120px; /* Adjust as needed */
+			}
+
+			.controls input[type="range"] {
+				width: 150px; /* Adjust as needed */
+			}
+
+			.controls button {
+				margin-right: 10px;
+				padding: 5px 10px;
+			}
 		</style>
 
 		<script> // Polyfill Object.assign()
@@ -93,9 +121,49 @@
 		<script defer src="app.js"></script>
 	</head>
 	<body>
+		<div class="controls">
+			<div>
+				<label for="nbAnts">Number of Ants:</label>
+				<input type="range" id="nbAnts" name="nbAnts" min="1" max="1000" value="200">
+				<span id="nbAntsValue">200</span>
+			</div>
+			<div>
+				<label for="velocity">Velocity:</label>
+				<input type="range" id="velocity" name="velocity" min="0.1" max="5" step="0.1" value="1">
+				<span id="velocityValue">1</span>
+			</div>
+			<div>
+				<label for="intelligence">Intelligence:</label>
+				<input type="range" id="intelligence" name="intelligence" min="0" max="1" step="0.1" value="0.5">
+				<span id="intelligenceValue">0.5</span>
+			</div>
+			<div>
+				<label for="repulsionSize">Repulsion Size:</label>
+				<input type="range" id="repulsionSize" name="repulsionSize" min="1" max="50" value="10">
+				<span id="repulsionSizeValue">10</span>
+			</div>
+			<div>
+				<label for="repulsionSpeed">Repulsion Speed:</label>
+				<input type="range" id="repulsionSpeed" name="repulsionSpeed" min="0.1" max="5" step="0.1" value="1">
+				<span id="repulsionSpeedValue">1</span>
+			</div>
+			<div>
+				<button id="playPauseButton">Play/Pause</button>
+				<button id="resetButton">Reset</button>
+			</div>
+		</div>
+		<div id="hud">
+            <div>FPS: <span id="hudFPS">--</span></div>
+            <div>Ants: <span id="hudAnts">--</span></div>
+            <div>Velocity: <span id="hudVelocity">--</span></div>
+            <div>Intelligence: <span id="hudIntelligence">--</span></div>
+            <div>Repulsion Size: <span id="hudRepulsionSize">--</span></div>
+            <div>Repulsion Speed: <span id="hudRepulsionSpeed">--</span></div>
+        </div>
 		<div class="colony"></div>
 		<div id="FPS" class="monitor">FPS: </div>
 		<div id="dT" class="monitor">dT: </div>
 		<div id="warning" class="invisible">WARNING ! ANT NUMBER WILL ADAPT TO ASSURE FPS IS SUPERIOR TO 25</div>
+		<canvas id="minimapCanvas"></canvas>
 	</body>
 </html>

@@ -94,7 +94,7 @@ module.exports = function(container, pointsMap, options){
 		// Update HUD
 		if (hudFPSSpan) hudFPSSpan.textContent = FPSCount;
 		if (hudAntsSpan) hudAntsSpan.textContent = population.length;
-		
+
 		// dTMonitor.innerText = 'dT : ' + t + 'ms';
 	}
 
@@ -140,7 +140,7 @@ module.exports = function(container, pointsMap, options){
 		if (options && typeof options.repSize !== 'undefined' && canvas.width > 0 && canvas.height > 0) {
 			const normMouseX = lastMouseMoveEvent.clientX / canvas.width;
 			const normMouseY = lastMouseMoveEvent.clientY / canvas.height;
-			
+
 			if (normMouseX >= 0 && normMouseX <= 1 && normMouseY >=0 && normMouseY <=1) { // Only draw if mouse is over main canvas
 				const mouseMapX = normMouseX * minimapWidth;
 				const mouseMapY = normMouseY * minimapHeight;
